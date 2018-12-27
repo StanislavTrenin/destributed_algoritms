@@ -77,11 +77,12 @@ public class ReplicatedStockServer extends ReceiverAdapter {
     /**
      * Set a stock if it's value equal to ref
      */
-    public boolean _CAS(String name, double reference, Double newValue) {
+    public boolean _CAS(String name, String reference, String newValue) {
         synchronized (stocks) {
-            Double val = stocks.get(name);
-            if (val == reference) {
-                stocks.put(name, newValue);
+
+            if ((stocks.get(name) == null && "".equals(reference))||
+                    stocks.get(name).equals(Double.parseDouble(reference))) {
+                stocks.put(name, Double.parseDouble(newValue));
                 System.out.printf("-- cas -- set %s to %s\n", name, newValue);
                 return true;
             } else {
@@ -101,8 +102,8 @@ public class ReplicatedStockServer extends ReceiverAdapter {
         lock.lock();
         try {
             RspList<Boolean> rsps = disp.callRemoteMethods(null, "_CAS",
-                    new Object[]{key, refVal, Double.parseDouble(newValue)},
-                    new Class[]{String.class, Double.class, Double.class}, RequestOptions.SYNC());
+                    new Object[]{key, referenceValue, newValue},
+                    new Class[]{String.class, String.class, String.class}, RequestOptions.SYNC());
 
 
             int countSucceeded = 0;
